@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>しーちゃんの干支ナビ</title>
+<meta name="theme-color" content="#3247a4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="干支ナビ">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>
+/* VOICE: にぎやか・やさしい。沖縄のお祭り気分
+   IDEA: 神社でもらう干支早見表を、しーちゃんが案内する
+   PICTURE: しーちゃん＋吹き出し、大きな干支カード
+   COLOUR: 海の青、ハイビスカスの赤、太陽の黄色
+   TYPE: 太い丸ゴシック、大きな数字 */
+:root{color-scheme:light;--sea:#1d74c9;--deep:#1b3a8f;--red:#e8344e;--sun:#ffc83d;--ink:#1d2433;--card:#ffffff;--gray:#3b3f47}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 "Hiragino Maru Gothic ProN","Hiragino Sans","Rounded Mplus 1c","Noto Sans JP",system-ui,sans-serif;overflow-x:clip;
+ background:linear-gradient(180deg,#58c6ef 0,#9fe3f7 260px,#fff6d8 620px,#ffe9ef 100%);min-height:100vh;
+ padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.wrap{max-width:720px;margin:0 auto;padding:12px 14px 40px;position:relative}
+/* deco */
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.sky i{position:absolute;font-style:normal;opacity:.75;animation:float 9s linear infinite}
+@keyframes float{from{transform:translateY(105vh) rotate(0)}to{transform:translateY(-15vh) rotate(360deg)}}
+.wrap>*{position:relative;z-index:1}
+header{display:flex;align-items:center;gap:10px;padding:6px 2px 10px}
+header img{width:52px;height:52px;border-radius:12px;box-shadow:0 3px 8px #0003}
+h1{margin:0;font-size:clamp(24px,6.5vw,34px);line-height:1.1;color:#fff;text-shadow:0 2px 0 var(--deep),0 0 12px #0004;letter-spacing:.02em}
+h1 small{display:block;font-size:14px;text-shadow:0 1px 0 var(--deep)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:8px;align-items:end;margin-bottom:12px}
+.shi{position:relative}
+.shi img{width:100%;display:block;filter:drop-shadow(0 6px 6px #0003);transform-origin:50% 100%}
+.shi img.talk{animation:paku .28s ease-in-out infinite alternate}
+@keyframes paku{from{transform:scaleY(1) scaleX(1)}to{transform:scaleY(.95) scaleX(1.03)}}
+.bal{position:relative;background:#fff;border:4px solid var(--red);border-radius:22px;padding:14px 14px;font-size:17px;font-weight:700;min-height:120px;box-shadow:0 5px 0 #0002;margin-bottom:28%}
+.bal::before{content:"";position:absolute;left:-18px;bottom:26px;border:12px solid transparent;border-right:16px solid var(--red)}
+.bal::after{content:"";position:absolute;left:-9px;bottom:30px;border:8px solid transparent;border-right:11px solid #fff}
+/* cards */
+.card{background:var(--card);border-radius:22px;padding:16px;margin:0 0 14px;box-shadow:0 6px 0 #0000001a,0 2px 10px #0001;border:3px solid #fff}
+.card h2{margin:0 0 10px;font-size:21px;line-height:1.25;color:var(--deep);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .tag{font-size:13px;background:var(--sun);color:#5a3c00;border-radius:99px;padding:2px 10px}
+/* picker */
+.pick{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:10px;align-items:stretch}
+.wheelbox{position:relative;height:280px;border-radius:18px;background:#eef6ff;overflow:hidden;border:3px solid #cfe3fb}
+.wheelbox::before{content:"";position:absolute;left:6px;right:6px;top:112px;height:56px;border-radius:14px;background:var(--sun);box-shadow:0 0 0 3px #ffb300 inset;pointer-events:none}
+.wheel{position:absolute;inset:0;overflow-y:scroll;scroll-snap-type:y mandatory;padding:112px 0;scrollbar-width:none;overscroll-behavior:contain}
+.wheel::-webkit-scrollbar{display:none}
+.wi{height:56px;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:22px;position:relative;color:#57627a;white-space:nowrap}
+.wi small{font-size:14px;font-weight:700}
+.wi.on{color:#3b2500}
+.arrows{display:grid;grid-template-rows:1fr 1fr;gap:10px}
+.btn{appearance:none;border:0;border-radius:16px;font:inherit;font-weight:800;cursor:pointer;min-height:48px;padding:10px 14px;background:var(--sea);color:#fff;box-shadow:0 5px 0 #0d4c8a;transition:transform .06s,box-shadow .06s,filter .06s;touch-action:manipulation}
+.btn:active,.btn.pr{transform:translateY(5px);box-shadow:0 0 0 #0000;filter:brightness(.85)}
+.btn.red{background:var(--red);box-shadow:0 5px 0 #9c1830}
+.btn.yel{background:var(--sun);color:#4a3000;box-shadow:0 5px 0 #c58f00}
+.btn.gray{background:#e4e8ef;color:#2a3140;box-shadow:0 5px 0 #b3bac6}
+.arrows .btn{font-size:26px}
+.sex{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.sex .btn{background:#e4e8ef;color:#2a3140;box-shadow:0 5px 0 #b3bac6;font-size:19px}
+.sex .btn.sel{background:var(--deep);color:#fff;box-shadow:0 5px 0 #0b1f55}
+/* banner */
+.banner{background:var(--gray);border-radius:18px;padding:10px;margin:0 0 14px;text-align:center;box-shadow:0 5px 0 #0003}
+.banner a{display:block;text-decoration:none;color:#fff}
+.banner img{width:100%;display:block;border-radius:10px}
+.banner .addr{font-size:14px;margin-top:6px;color:#f1f1f1}
+.np{display:none;margin-top:10px;border-radius:12px;overflow:hidden;background:#111;cursor:pointer}
+.np.show{display:block}
+.np span{display:inline-block;white-space:nowrap;font-weight:900;font-size:18px;padding:10px 12px;animation:npin 3s ease-out forwards, rainbow 1.2s linear 3s infinite}
+@keyframes npin{from{transform:translateX(100vw)}to{transform:translateX(0)}}
+@keyframes rainbow{0%{color:#ff3b3b;text-shadow:0 0 10px #ff3b3b}25%{color:#ffe23b;text-shadow:0 0 10px #ffe23b}50%{color:#3bff7a;text-shadow:0 0 10px #3bff7a}75%{color:#3bc9ff;text-shadow:0 0 10px #3bc9ff}100%{color:#ff3bd8;text-shadow:0 0 10px #ff3bd8}}
+/* result */
+.res-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
+.etoBig{width:108px;height:108px;border-radius:26px;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc83d 70%);display:grid;place-items:center;box-shadow:0 5px 0 #c58f00}
+.etoBig b{font-size:58px;line-height:1;color:#7a1d00;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif}
+.etoName{font-size:26px;font-weight:900;line-height:1.2}
+.etoName small{display:block;font-size:15px;font-weight:700;color:#5b667e}
+.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.num{background:#eef6ff;border-radius:16px;padding:10px 6px;text-align:center}
+.num div{font-size:13px;color:#4c5872;font-weight:700}
+.num b{font-size:clamp(26px,8vw,36px);line-height:1.15;color:var(--deep);white-space:nowrap}
+.num b small{font-size:15px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.bd{border-radius:14px;padding:8px 12px;font-weight:800;font-size:16px;line-height:1.3}
+.bd.yaku{background:#ffe1e6;color:#a3102a;border:2px solid var(--red)}
+.bd.yaku.main{background:var(--red);color:#fff;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px #e8344e44}}
+.bd.ok{background:#e3f7ea;color:#16683a;border:2px solid #36b56a}
+.bd.tsb{background:#fff1c7;color:#7a4b00;border:2px solid #f0a800}
+.bd.fs{background:#e9e4ff;color:#3e2a9b;border:2px solid #7d68e8}
+.trait{margin-top:10px;font-size:15px;color:#4c5872}
+/* fortune */
+.fortune{background:linear-gradient(135deg,#ff7aa2,#ffb36b);color:#fff;border-color:#fff}
+.fortune h2{color:#fff}
+.stars{font-size:28px;letter-spacing:2px;color:#fff59d;text-shadow:0 2px 0 #c2410c}
+.fbox{background:#ffffff2e;border-radius:14px;padding:10px 12px;margin-top:8px;font-weight:700}
+.chip{display:inline-block;width:22px;height:22px;border-radius:50%;vertical-align:-5px;border:3px solid #fff;margin-right:6px}
+/* list */
+.ev{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;padding:10px 0;border-top:2px dashed #e3e7ef;align-items:center}
+.ev:first-of-type{border-top:0}
+.ev .y{font-weight:900;font-size:20px;color:var(--deep);white-space:nowrap}
+.ev .y small{display:block;font-size:12px;color:#66708a;font-weight:700}
+.ev .t{font-weight:700}
+.ev .t small{display:block;color:#66708a;font-weight:600;font-size:14px}
+.note{font-size:14px;color:#55607a;background:#f4f6fa;border-radius:12px;padding:10px 12px;margin-top:10px}
+/* family */
+.fam{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border-radius:16px;background:#f4f8ff;margin-bottom:8px;cursor:pointer;border:3px solid transparent}
+.fam.cur{border-color:var(--sun);background:#fff9e0}
+.fam .k{width:50px;height:50px;border-radius:14px;background:var(--sun);display:grid;place-items:center;font-size:28px;font-weight:900;color:#7a1d00;font-family:"Hiragino Mincho ProN",serif}
+.fam .n{font-weight:800}
+.fam .n small{display:block;font-weight:600;color:#5b667e;font-size:14px}
+.fam .del{min-height:44px;width:44px;padding:0;font-size:20px}
+.addrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}
+input[type=text]{font:inherit;font-size:17px;border:3px solid #cfe3fb;border-radius:14px;padding:10px 12px;min-height:48px;width:100%}
+input[type=text]:focus{outline:3px solid var(--sun);border-color:var(--sun)}
+/* table */
+.tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.tabs .btn{padding:6px 0;min-height:52px;font-size:22px;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;background:#e4e8ef;color:#2a3140;box-shadow:0 4px 0 #b3bac6}
+.tabs .btn.sel{background:var(--red);color:#fff;box-shadow:0 4px 0 #9c1830}
+.tbl{width:100%;border-collapse:collapse;margin-top:12px;font-size:16px}
+.tbl th{font-size:13px;color:#55607a;text-align:left;padding:6px 4px;border-bottom:2px solid #dde3ee}
+.tbl td{padding:8px 4px;border-bottom:1px solid #eef1f6;white-space:nowrap}
+.tbl td.r{text-align:right;font-weight:900;color:var(--deep);font-size:18px}
+.tbl tr.me td{background:#fff3c4}
+.yk{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.yk h3{margin:0 0 6px;font-size:17px}
+.yk div.row{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;padding:6px 8px;border-radius:10px;background:#f6f7fb;margin-bottom:5px;font-size:15px}
+.yk div.row b{color:var(--red)}
+/* bottom */
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tools .btn,.tools a.btn{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;font-size:16px;line-height:1.25}
+.ig{background:linear-gradient(45deg,#f9a825,#e91e63,#8e24aa)!important;box-shadow:0 5px 0 #6a1b9a!important}
+.ver{text-align:center;font-size:13px;color:#5b667e;margin-top:14px}
+/* modal */
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.show{display:flex}
+.mbox{background:#fff;border-radius:20px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:14px;text-align:center}
+.mbox img{width:100%;border-radius:12px;display:block}
+.mbox p{margin:10px 0;font-weight:700}
+.mbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.privacy{position:fixed;inset:0;z-index:60;background:#000c;display:none;align-items:center;justify-content:center;padding:20px}
+.privacy.show{display:flex}
+.privacy div{background:#fff;color:#d40000;font-weight:900;font-size:20px;border-radius:18px;padding:20px;max-width:520px;text-align:center;border:4px solid #d40000}
+.privacy small{display:block;color:#333;font-size:14px;margin-top:10px;font-weight:700}
+@media (prefers-reduced-motion:reduce){.sky i,.shi img.talk,.bd.yaku.main,.np span{animation:none}}
+@media (max-width:380px){.etoBig{width:88px;height:88px}.etoBig b{font-size:46px}.tabs .btn{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true"></div>
+<div class="wrap" id="app">
+ <header>
+  <img src="icon-192.png" alt="">
+  <h1><span data-en="ETO Navi">しーちゃんの干支ナビ</span><small data-en="Zodiac, ages &amp; life milestones">干支・年齢・厄年・体の節目</small></h1>
+ </header>
+
+ <section class="hero">
+  <div class="shi"><img id="shiImg" src="shichan.png" alt="しーちゃん"></div>
+  <div class="bal" id="bal" aria-live="polite"></div>
+ </section>
+
+ <section class="card">
+  <h2><span data-en="1. Pick your birth year">① 生まれ年をえらぶ</span></h2>
+  <div class="pick">
+   <div class="wheelbox"><div class="wheel" id="wheel"></div></div>
+   <div class="arrows">
+    <button class="btn" id="up" aria-label="前の年">▲</button>
+    <button class="btn" id="down" aria-label="次の年">▼</button>
+   </div>
+  </div>
+  <div class="sex">
+   <button class="btn" id="sexM" data-en="Male">男性</button>
+   <button class="btn" id="sexF" data-en="Female">女性</button>
+  </div>
+ </section>
+
+ <section class="banner" id="banner">
+  <a href="https://www.instagram.com/mirateria.project/" target="_blank" rel="noopener">
+   <img src="logo.jpg" alt="MIRATERIA ミラテリア">
+   <div class="addr" data-en="379-3 Nagake, Yaese, Shimajiri, Okinawa">沖縄県島尻郡八重瀬町長毛379-3</div>
+  </a>
+  <div class="np" id="np" role="button"><span id="npText"></span></div>
+ </section>
+
+ <section class="card" id="result"></section>
+ <section class="card fortune" id="fortune"></section>
+ <section class="card" id="future"></section>
+
+ <section class="card">
+  <h2><span data-en="Family list">家族・友だちリスト</span><span class="tag" data-en="tap to show">タップで表示</span></h2>
+  <div id="famList"></div>
+  <div class="addrow">
+   <input type="text" id="famName" maxlength="20" placeholder="名前（例：お母さん）" data-en-ph="Name (e.g. Mom)">
+   <button class="btn red" id="famAdd" data-en="Add">登録</button>
+  </div>
+  <div class="note" data-en="Saves the year and gender chosen above with this name.">上でえらんだ生まれ年と性別を、この名前で登録します。</div>
+ </section>
+
+ <section class="card">
+  <h2><span data-en="This year's yakudoshi">今年の厄年の人</span><span class="tag" id="yY"></span></h2>
+  <div class="yk" id="yakuList"></div>
+  <div class="note" data-en="Yakudoshi uses &quot;kazoe&quot; age (age +1). Many people visit a shrine for a blessing.">厄年は「数え年」（今年の年齢＋1）で数えます。神社でお祓いを受ける人が多いです。</div>
+ </section>
+
+ <section class="card">
+  <h2><span data-en="Find by zodiac">干支で探す（早見表）</span></h2>
+  <div class="tabs" id="tabs"></div>
+  <table class="tbl" id="etoTbl"></table>
+ </section>
+
+ <section class="card">
+  <div class="tools">
+   <button class="btn yel" id="homeBtn" data-en="Add to Home Screen">ホーム画面に追加する方法</button>
+   <button class="btn" id="shotBtn" data-en="Save whole screen as image">画面全体を画像で保存</button>
+   <a class="btn ig" href="https://www.instagram.com/mirateria.project/" target="_blank" rel="noopener" data-en="Instagram">インスタグラム</a>
+   <button class="btn gray" id="topBtn" data-en="Back to top">いちばん上へ</button>
+  </div>
+  <div class="note" data-en="Yakudoshi and life milestones are old traditions. They do not predict illness. If you are worried about your health, get a checkup or see a doctor.">厄年・体の節目は昔からの言い伝えです。病気を当てるものではありません。体が気になるときは、健康診断や病院へ。</div>
+  <div class="ver" id="ver"></div>
+ </section>
+</div>
+
+<div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
+<div class="privacy" id="privacy"><div><span data-en="This app does not collect or send personal information. It only receives banner notices.">本アプリは個人情報を収集・送信しません。通信はバナー広告の受信のみを行います。</span><small data-en="Tap to close">タップで閉じます</small></div></div>
+
+<script>
+{
+const VERSION='1.0.0';
+const BANNER_URL='https://mirateria-project.github.io/bana.kanri/banner.json';
+const JA=(navigator.language||'ja').toLowerCase().startsWith('ja');
+const t=(j,e)=>JA?j:e;
+const Y=new Date().getFullYear();
+const MIN=1912;
+const KEY='etoNavi.v1';
+
+/* ---------- data ---------- */
+const ETO=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const YOMI=['ね','うし','とら','う','たつ','み','うま','ひつじ','さる','とり','いぬ','い'];
+const ANI_J=['ねずみ','うし','とら','うさぎ','りゅう','へび','うま','ひつじ','さる','にわとり','いぬ','いのしし'];
+const ANI_E=['Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Sheep','Monkey','Rooster','Dog','Boar'];
+const EMO=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐗'];
+const TRAIT=[['働き者でコツコツ型','Hardworking and steady'],['ねばり強くて誠実','Patient and sincere'],['勇気があってリーダー気質','Brave, a natural leader'],['やさしくて人気者','Gentle and well-liked'],['元気いっぱいで運が強い','Energetic with strong luck'],['頭が良くて情が深い','Wise and deeply caring'],['明るくて行動力バツグン','Cheerful and full of drive'],['おだやかで思いやりがある','Calm and kind'],['器用でアイデアマン','Clever, full of ideas'],['きっちりしたしっかり者','Neat and dependable'],['正直で仲間思い','Honest and loyal'],['まっすぐで一生懸命','Straightforward and devoted']];
+const ERAS=[{j:'令和',e:'Reiwa',s:2019},{j:'平成',e:'Heisei',s:1989},{j:'昭和',e:'Showa',s:1926},{j:'大正',e:'Taisho',s:1912},{j:'明治',e:'Meiji',s:1868}];
+const YAKU={M:{25:0,42:1,61:0},F:{19:0,33:1,37:0,61:0}};
+const TSB=[13,25,37,49,61,73,85,97];
+const CHOJU={61:['還暦','Kanreki'],70:['古希','Koki'],77:['喜寿','Kiju'],80:['傘寿','Sanju'],88:['米寿・トーカチ','Beiju / Tokachi'],90:['卒寿','Sotsuju'],97:['カジマヤー','Kajimaya'],99:['白寿','Hakuju']};
+const FORT=[['思いがけない良い知らせが届きそう','Unexpected good news may arrive'],['人との会話から運が開ける日','Luck opens through conversation'],['あせらずゆっくり進むと吉','Slow and steady brings luck'],['新しいことを始めるのにぴったり','A perfect day to start something new'],['身の回りを片付けると運気アップ','Tidying up boosts your luck'],['笑顔がいちばんのお守り','Your smile is your best charm'],['小さな親切が大きく返ってくる','Small kindness comes back big'],['気になっていたことを片付けるチャンス','A chance to finish what was on your mind'],['少し休むと良いアイデアが浮かぶ','A little rest brings a good idea'],['昔の友達とのご縁がつながりそう','An old friendship may reconnect'],['食事を楽しむと運がめぐる','Enjoying meals keeps luck flowing'],['直感を信じて大丈夫','Trust your instincts'],['人にまかせると上手くいく','Letting others help works well'],['外に出ると良いことがありそう','Going outside brings something good'],['ていねいな言葉が幸運を呼ぶ','Kind words invite good fortune'],['今日はのんびりが正解','Taking it easy is the right answer today']];
+const TIPS=[['コップ1杯の水をこまめに飲もう','Sip water often today'],['いつもより10分多く歩こう','Walk 10 minutes more than usual'],['血圧を測ってみよう','Try checking your blood pressure'],['塩分ひかえめを意識しよう','Go a little easier on salt'],['夜は早めに寝よう','Get to bed a bit earlier tonight'],['肩と首をゆっくり回そう','Slowly roll your shoulders and neck'],['野菜を1品ふやそう','Add one more vegetable dish'],['深呼吸を3回しよう','Take three deep breaths'],['歯みがきをていねいに','Brush your teeth extra carefully'],['健康診断の予定を確認しよう','Check when your next checkup is'],['たくさん笑おう。笑顔は元気のもと','Laugh a lot, it gives you energy'],['お酒はほどほどに','Keep drinks in moderation'],['日光を少し浴びよう','Get a little sunshine'],['ストレッチで体をのばそう','Stretch your body'],['よくかんでゆっくり食べよう','Chew well and eat slowly'],['家族や友達に「元気？」と連絡しよう','Message someone: "How are you?"']];
+const COLORS=[['赤','Red','#e53935'],['オレンジ','Orange','#fb8c00'],['黄色','Yellow','#fdd835'],['緑','Green','#43a047'],['水色','Sky blue','#4fc3f7'],['青','Blue','#1e5bd8'],['むらさき','Purple','#8e24aa'],['ピンク','Pink','#f06292'],['白','White','#ffffff'],['金色','Gold','#d4a017'],['茶色','Brown','#8d5524'],['黒','Black','#222222']];
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const etoJ=k=>YOMI[k]===ANI_J[k]?`${YOMI[k]}年`:`${YOMI[k]}年（${ANI_J[k]}）`;
+const etoIdx=y=>((y-4)%12+12)%12;
+function wareki(y){
+  const out=[];
+  for(let i=0;i<ERAS.length;i++){const e=ERAS[i];if(y>=e.s){const n=y-e.s+1;out.push(JA?`${e.j}${n===1?'元':n}年`:`${e.e} ${n}`);if(y===e.s&&ERAS[i+1]){const p=ERAS[i+1];out.push(JA?`${p.j}${y-p.s+1}年`:`${p.e} ${y-p.s+1}`)}break}}
+  return out.join(JA?'・':' / ');
+}
+function yakuOf(kazoe,sex){
+  const tb=YAKU[sex];
+  for(const k in tb){const b=+k,big=tb[k];
+    if(kazoe===b)return{type:'main',base:b,big};
+    if(kazoe===b-1)return{type:'pre',base:b,big};
+    if(kazoe===b+1)return{type:'post',base:b,big};}
+  return null;
+}
+function yakuLabel(r){
+  if(!r)return'';
+  const n={pre:t('前厄','Pre-yaku'),main:r.big?t('大厄（本厄）','Major yaku'):t('本厄','Main yaku'),post:t('後厄','Post-yaku')}[r.type];
+  return n;
+}
+const fsN=sex=>sex==='F'?7:8, fsMax=sex=>sex==='F'?49:64;
+const isFS=(age,sex)=>age>0&&age%fsN(sex)===0&&age<=fsMax(sex);
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+
+/* ---------- state ---------- */
+let S={year:Y-40,sex:'M',fam:[],cur:null,tab:null,seenPrivacy:false};
+try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&typeof v==='object')S=Object.assign(S,v)}catch(e){}
+S.year=Math.min(Y,Math.max(MIN,+S.year||Y-40));
+if(!Array.isArray(S.fam))S.fam=[];
+if(S.tab==null)S.tab=etoIdx(S.year);
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+addEventListener('pagehide',save);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});
+
+/* ---------- i18n static ---------- */
+if(!JA){document.documentElement.lang='en';
+  document.querySelectorAll('[data-en]').forEach(el=>{el.textContent=el.dataset.en});
+  document.querySelectorAll('[data-en-ph]').forEach(el=>{el.placeholder=el.dataset.enPh});
+  document.title='ETO Navi';}
+$('ver').textContent=t('バージョン ','Version ')+VERSION;
+$('yY').textContent=JA?`${Y}年（${wareki(Y)}）`:String(Y);
+
+/* ---------- sound & press ---------- */
+let AC=null;
+function beep(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=1250;g.gain.setValueAtTime(.08,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.07);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.08)}catch(e){}}
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('button,a,.fam,.wi,.np');if(!b)return;beep();if(b.classList.contains('btn')){b.classList.add('pr');setTimeout(()=>b.classList.remove('pr'),140)}},{passive:true});
+
+/* ---------- decoration ---------- */
+{const sky=$('sky'),items=['🌺','✨','💖','⭐','🌸','✨'];let h='';
+ for(let i=0;i<14;i++)h+=`<i style="left:${(i*7.3)%100}%;font-size:${18+(i*5)%16}px;animation-duration:${9+(i*3)%10}s;animation-delay:-${(i*1.7)%12}s">${items[i%items.length]}</i>`;sky.innerHTML=h}
+
+/* ---------- wheel ---------- */
+const wheel=$('wheel'),IH=56;
+{let h='';for(let y=MIN;y<=Y;y++){const k=etoIdx(y);h+=`<div class="wi" data-y="${y}">${y}<small>${JA?wareki(y).split('・')[0]:''} ${ETO[k]}</small></div>`}wheel.innerHTML=h}
+function wheelTo(y,smooth){wheel.scrollTo({top:(y-MIN)*IH,behavior:smooth?'smooth':'auto'})}
+let wt=null;
+wheel.addEventListener('scroll',()=>{clearTimeout(wt);wt=setTimeout(()=>{const y=Math.min(Y,Math.max(MIN,MIN+Math.round(wheel.scrollTop/IH)));if(y!==S.year){S.year=y;S.cur=null;S.tab=etoIdx(y);save();renderAll(true)}markWheel()},110)},{passive:true});
+wheel.addEventListener('click',e=>{const it=e.target.closest('.wi');if(it)wheelTo(+it.dataset.y,true)});
+function markWheel(){wheel.querySelectorAll('.wi.on').forEach(x=>x.classList.remove('on'));const el=wheel.children[S.year-MIN];if(el)el.classList.add('on')}
+$('up').onclick=()=>{if(S.year>MIN)wheelTo(S.year-1,true)};
+$('down').onclick=()=>{if(S.year<Y)wheelTo(S.year+1,true)};
+function setSex(s){S.sex=s;S.cur=null;save();renderAll(true)}
+$('sexM').onclick=()=>setSex('M');$('sexF').onclick=()=>setSex('F');
+
+/* ---------- person info ---------- */
+function info(year,sex){
+  const age=Y-year,kazoe=age+1,k=etoIdx(year),yk=yakuOf(kazoe,sex);
+  const tsb=TSB.includes(kazoe), cj=CHOJU[kazoe], fs=isFS(age,sex);
+  return{year,sex,age,kazoe,k,yk,tsb,cj,fs};
+}
+function events(p,limit){
+  const out=[];
+  for(let kz=p.kazoe+1;kz<=110&&out.length<limit;kz++){
+    const age=kz-1,y=p.year+age,list=[];
+    const yk=yakuOf(kz,p.sex);if(yk)list.push({c:'yaku',txt:yakuLabel(yk)});
+    if(TSB.includes(kz))list.push({c:'tsb',txt:kz===97?t('トゥシビー（カジマヤー）','Tushibi (Kajimaya)'):t('トゥシビー（生年祝い）','Tushibi (birth-year celebration)')});
+    else if(CHOJU[kz])list.push({c:'tsb',txt:t(CHOJU[kz][0],CHOJU[kz][1])});
+    if(isFS(age,p.sex))list.push({c:'fs',txt:t('体の節目','Body milestone')});
+    if(list.length)out.push({y,age,kz,list});
+  }
+  return out;
+}
+
+/* ---------- render ---------- */
+function shiSay(p){
+  const name=S.cur!=null&&S.fam[S.cur]?S.fam[S.cur].name:'';
+  const who=name?t(`${name}は`,`${name}: `):'';
+  if(p.yk&&p.yk.type==='main')return t(`${who}今年は${yakuLabel(p.yk)}！ 神社でお祓いをして、健康診断も受けておくと安心だよ`,`${who}This is your ${yakuLabel(p.yk)} year! A shrine blessing and a health checkup will put your mind at ease.`);
+  if(p.yk)return t(`${who}今年は${yakuLabel(p.yk)}だよ。むりをしないで、体の声を聞いてね`,`${who}This is your ${yakuLabel(p.yk)} year. Don't overdo it, listen to your body.`);
+  if(p.fs)return t(`${who}今年は体の節目の年。血圧を測ったり、健康診断に行くきっかけにしてね`,`${who}This is a body milestone year. A good time to check blood pressure or get a checkup.`);
+  if(p.tsb)return t(`${who}今年はトゥシビー！ 生まれ年のお祝いだよ。おめでとう🎉`,`${who}It's your Tushibi year, an Okinawan birth-year celebration! 🎉`);
+  if(p.cj)return t(`${who}今年は${p.cj[0]}のお祝い！ おめでとう🎉`,`${who}Congratulations on your ${p.cj[1]}! 🎉`);
+  const d=new Date().toISOString().slice(0,10),i=hash(d+p.k+'tip')%TIPS.length;
+  return t(`${who}${ANI_J[p.k]}年さん、今日のひとことは「${TIPS[i][0]}」だよ`,`${who}Hi ${ANI_E[p.k]}! Today's tip: ${TIPS[i][1]}.`);
+}
+let typer=null;
+function speak(text){
+  const el=$('bal'),img=$('shiImg');clearInterval(typer);el.textContent='';img.classList.add('talk');let i=0;const chars=[...text];
+  typer=setInterval(()=>{el.textContent+=chars[i++]||'';if(i>=chars.length){clearInterval(typer);img.classList.remove('talk')}},45);
+}
+function renderResult(p){
+  const b=[];
+  if(p.yk)b.push(`<span class="bd yaku ${p.yk.type==='main'?'main':''}">⚠ ${t('今年は','')}${yakuLabel(p.yk)}${t('',' this year')}</span>`);
+  else b.push(`<span class="bd ok">✓ ${t('今年は厄年ではありません','Not a yakudoshi year')}</span>`);
+  if(p.tsb)b.push(`<span class="bd tsb">🎉 ${p.kazoe===97?t('トゥシビー（カジマヤー）','Tushibi (Kajimaya)'):t('トゥシビー（生年祝い）','Tushibi year')}</span>`);
+  else if(p.cj)b.push(`<span class="bd tsb">🎉 ${t(p.cj[0],p.cj[1])}</span>`);
+  if(p.fs)b.push(`<span class="bd fs">💜 ${t('体の節目の年','Body milestone year')}</span>`);
+  $('result').innerHTML=`<h2>${t('② あなたの結果','2. Your result')}<span class="tag">${p.sex==='M'?t('男性','Male'):t('女性','Female')}</span></h2>
+  <div class="res-top"><div class="etoBig"><b>${ETO[p.k]}</b></div>
+  <div class="etoName">${EMO[p.k]} ${JA?etoJ(p.k):`Year of the ${ANI_E[p.k]}`}<small>${p.year}${t('年生まれ','')} ・ ${esc(wareki(p.year))}</small></div></div>
+  <div class="nums">
+   <div class="num"><div>${t('今年なる年齢','Age this year')}</div><b>${p.age}<small>${t('歳','')}</small></b></div>
+   <div class="num"><div>${t('数え年','Kazoe age')}</div><b>${p.kazoe}<small>${t('歳','')}</small></b></div>
+   <div class="num"><div>${t('生まれ年','Born')}</div><b>${p.year}</b></div>
+  </div>
+  <div class="badges">${b.join('')}</div>
+  <div class="trait">${t('言い伝えの性格：','Folk trait: ')}<b>${t(TRAIT[p.k][0],TRAIT[p.k][1])}</b></div>`;
+}
+function renderFortune(p){
+  const d=new Date(),ds=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  const h=hash(ds+'|'+p.k+'|'+p.sex+'|'+p.year);
+  const st=3+(h%3),f=FORT[(h>>>3)%FORT.length],tp=TIPS[(h>>>7)%TIPS.length],c=COLORS[(h>>>11)%COLORS.length];
+  $('fortune').innerHTML=`<h2>🔮 ${t(`今日の${ANI_J[p.k]}年さん`,`Today for the ${ANI_E[p.k]}`)}<span class="tag">${d.getMonth()+1}/${d.getDate()}</span></h2>
+  <div class="stars">${'★'.repeat(st)}${'☆'.repeat(5-st)}</div>
+  <div class="fbox">${t('運勢：','Luck: ')}${t(f[0],f[1])}</div>
+  <div class="fbox">${t('元気のコツ：','Health tip: ')}${t(tp[0],tp[1])}</div>
+  <div class="fbox"><span class="chip" style="background:${c[2]}"></span>${t('ラッキーカラー：','Lucky color: ')}${t(c[0],c[1])}</div>`;
+}
+function renderFuture(p){
+  const ev=events(p,6);
+  const rows=ev.map(e=>`<div class="ev"><div class="y">${e.y}<small>${t(`${e.age}歳／数え${e.kz}`,`age ${e.age} / kazoe ${e.kz}`)}</small></div><div class="t">${e.list.map(x=>`<span class="bd ${x.c==='yaku'?'yaku':x.c} " style="display:inline-block;margin:2px 4px 2px 0;font-size:15px;padding:4px 10px">${esc(x.txt)}</span>`).join('')}</div></div>`).join('');
+  $('future').innerHTML=`<h2>📅 ${t('これからの節目','Coming milestones')}</h2>${rows||`<div class="note">${t('予定はありません','Nothing ahead')}</div>`}
+  <div class="note">${t(`体の節目は昔からの言い伝え（東洋医学の考え）で、女性は7の倍数、男性は8の倍数の歳に体が変わりやすいといわれます。`,`Body milestones come from old Eastern-medicine tradition: women at multiples of 7, men at multiples of 8.`)}</div>`;
+}
+function renderFam(){
+  const html=S.fam.map((f,i)=>{const p=info(f.year,f.sex);const tags=[p.yk?yakuLabel(p.yk):'',p.tsb?t('トゥシビー','Tushibi'):'',p.fs?t('節目','Milestone'):''].filter(Boolean).join('・');
+   return`<div class="fam ${S.cur===i?'cur':''}" data-i="${i}"><div class="k">${ETO[p.k]}</div><div class="n">${esc(f.name)}<small>${f.year}${t('年生','')}・${p.age}${t('歳','')}・${f.sex==='M'?t('男','M'):t('女','F')}${tags?` ・ <b style="color:#c2142f">${tags}</b>`:''}</small></div><button class="btn gray del" data-del="${i}" aria-label="${t('削除','Delete')}">✕</button></div>`}).join('');
+  $('famList').innerHTML=html||`<div class="note">${t('まだ登録がありません','No one yet')}</div>`;
+}
+$('famList').addEventListener('click',e=>{
+  const d=e.target.closest('[data-del]');
+  if(d){e.stopPropagation();const i=+d.dataset.del;confirmBox(t(`「${S.fam[i].name}」を消しますか？`,`Delete "${S.fam[i].name}"?`),()=>{S.fam.splice(i,1);if(S.cur===i)S.cur=null;else if(S.cur>i)S.cur--;save();renderFam();renderAll(false)});return}
+  const f=e.target.closest('.fam');if(!f)return;const i=+f.dataset.i,m=S.fam[i];
+  S.cur=i;S.year=m.year;S.sex=m.sex;S.tab=etoIdx(m.year);save();wheelTo(m.year,false);renderAll(true);window.scrollTo({top:$('result').offsetTop-10,behavior:'smooth'});
+});
+$('famName').addEventListener('keydown',e=>{if(e.key==='Enter')$('famAdd').click()});
+$('famAdd').onclick=()=>{const n=$('famName').value.trim();if(!n){$('famName').focus();speak(t('名前を入れてね','Please type a name'));return}
+  S.fam.push({name:n,year:S.year,sex:S.sex});S.cur=S.fam.length-1;$('famName').value='';save();renderAll(true)};
+function renderYaku(){
+  const col=sex=>{const r=[];const tb=YAKU[sex];for(const k in tb){const b=+k;for(const [kz,ty] of [[b-1,'pre'],[b,'main'],[b+1,'post']]){const y=Y-kz+1;r.push(`<div class="row"><span>${y}${t('年生','')} <small>${esc(wareki(y).split(JA?'・':' / ')[0])} ${ETO[etoIdx(y)]}</small></span><span>${t('数え','')}${kz} <b>${yakuLabel({type:ty,big:tb[k]})}</b></span></div>`)}}return r.join('')};
+  $('yakuList').innerHTML=`<div><h3>👨 ${t('男性','Men')}</h3>${col('M')}</div><div><h3>👩 ${t('女性','Women')}</h3>${col('F')}</div>`;
+  $('yakuList').style.gridTemplateColumns=innerWidth<560?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))';
+}
+function renderTabs(){
+  $('tabs').innerHTML=ETO.map((e,i)=>`<button class="btn ${S.tab===i?'sel':''}" data-t="${i}" aria-label="${YOMI[i]}">${e}</button>`).join('');
+  const rows=[];for(let y=Y-((Y-4-S.tab)%12+12)%12;y>=MIN;y-=12){rows.push(`<tr class="${y===S.year?'me':''}"><td>${y}${t('年','')}</td><td>${esc(wareki(y))}</td><td class="r">${Y-y}${t('歳','')}</td></tr>`)}
+  $('etoTbl').innerHTML=`<thead><tr><th>${t('西暦','Year')}</th><th>${t('和暦','Japanese era')}</th><th style="text-align:right">${t('今年の年齢','Age')}</th></tr></thead><tbody>${rows.join('')}</tbody>`;
+}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;S.tab=+b.dataset.t;save();renderTabs()});
+function renderAll(talk){
+  const p=info(S.year,S.sex);
+  $('sexM').classList.toggle('sel',S.sex==='M');$('sexF').classList.toggle('sel',S.sex==='F');
+  renderResult(p);renderFortune(p);renderFuture(p);renderFam();renderTabs();markWheel();
+  if(talk)speak(shiSay(p));
+}
+
+/* ---------- modal ---------- */
+function openModal(html){$('mbox').innerHTML=html;$('modal').classList.add('show')}
+function closeModal(){$('modal').classList.remove('show');$('mbox').innerHTML=''}
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal'||e.target.closest('[data-close]'))closeModal()});
+function confirmBox(msg,ok){openModal(`<p style="font-size:19px">${esc(msg)}</p><div class="mbtns"><button class="btn red" id="cOk">${t('消す','Delete')}</button><button class="btn gray" data-close>${t('やめる','Cancel')}</button></div>`);$('cOk').onclick=()=>{closeModal();ok()}}
+$('homeBtn').onclick=()=>openModal(`<img src="homescreen.jpg" alt=""><p>${t('Androidの人は、Chromeで開いてね','Android: please open this page in Chrome')}</p><div class="mbtns"><button class="btn" data-close>${t('閉じる','Close')}</button></div>`);
+$('topBtn').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+/* ---------- full page image ---------- */
+function loadImg(src){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
+async function makeShot(){
+  const p=info(S.year,S.sex),W=1080,PAD=50,FONT='"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif';
+  const cv=document.createElement('canvas'),c=cv.getContext('2d');
+  const blocks=[];const add=(txt,size,color,bold,bg)=>blocks.push({txt,size,color:color||'#1d2433',bold,bg});
+  add(t('しーちゃんの干支ナビ','ETO Navi'),56,'#1b3a8f',1);
+  add(`${ETO[p.k]}  ${JA?etoJ(p.k):`Year of the ${ANI_E[p.k]}`}`,64,'#7a1d00',1);
+  add(`${p.year}${t('年生まれ','')}  ${wareki(p.year)}  ${p.sex==='M'?t('男性','Male'):t('女性','Female')}`,34,'#3c4660');
+  add(t(`今年なる年齢 ${p.age}歳 ／ 数え年 ${p.kazoe}歳`,`Age ${p.age} / Kazoe ${p.kazoe}`),40,'#1b3a8f',1);
+  add(p.yk?t(`⚠ 今年は${yakuLabel(p.yk)}`,`⚠ ${yakuLabel(p.yk)} this year`):t('✓ 今年は厄年ではありません','✓ Not a yakudoshi year'),36,p.yk?'#c2142f':'#16683a',1);
+  if(p.tsb)add(t('🎉 今年はトゥシビー（生年祝い）','🎉 Tushibi year'),34,'#7a4b00',1);
+  if(p.cj)add(`🎉 ${t(p.cj[0],p.cj[1])}`,34,'#7a4b00',1);
+  if(p.fs)add(t('💜 今年は体の節目の年','💜 Body milestone year'),34,'#3e2a9b',1);
+  add(t('しーちゃん：','Shi-chan: ')+shiSay(p),32,'#1d2433',0,'#fff3c4');
+  add(t('■ これからの節目','■ Coming milestones'),38,'#1b3a8f',1);
+  events(p,6).forEach(e=>add(`${e.y}${t('年','')}（${t(`${e.age}歳・数え${e.kz}`,`age ${e.age}, kazoe ${e.kz}`)}）  ${e.list.map(x=>x.txt).join('・')}`,30));
+  if(S.fam.length){add(t('■ 家族・友だち','■ Family'),38,'#1b3a8f',1);
+    S.fam.forEach(f=>{const q=info(f.year,f.sex);add(`${f.name}  ${ETO[q.k]}  ${f.year}${t('年生','')}  ${q.age}${t('歳','')}  ${q.yk?yakuLabel(q.yk):''} ${q.tsb?t('トゥシビー','Tushibi'):''} ${q.fs?t('節目','Milestone'):''}`,30)})}
+  add(t(`■ ${Y}年の厄年`,`■ Yakudoshi in ${Y}`),38,'#1b3a8f',1);
+  for(const sex of ['M','F']){const tb=YAKU[sex];const parts=[];for(const k in tb){const b=+k;for(const [kz,ty] of [[b-1,'pre'],[b,'main'],[b+1,'post']])parts.push(`${Y-kz+1}${t('年生','')} ${yakuLabel({type:ty,big:tb[k]})}`)}add(`${sex==='M'?t('男性','Men'):t('女性','Women')}： ${parts.join(' ／ ')}`,28)}
+  add(t('厄年・体の節目は昔からの言い伝えです。病気を当てるものではありません。','Yakudoshi and milestones are traditions, not predictions of illness.'),26,'#55607a');
+  add(`MIRATERIA ${t('沖縄県島尻郡八重瀬町長毛379-3','Yaese, Okinawa')}  Instagram: mirateria.project  v${VERSION}`,24,'#55607a');
+  const wrap=(b)=>{c.font=`${b.bold?800:600} ${b.size}px ${FONT}`;const maxW=W-PAD*2-(b.bg?40:0);const lines=[];let line='';for(const ch of [...b.txt]){if(c.measureText(line+ch).width>maxW&&line){lines.push(line);line=ch}else line+=ch}if(line)lines.push(line);return lines};
+  const HEAD=300;let H=HEAD;const laid=blocks.map(b=>{const l=wrap(b);const h=l.length*b.size*1.4+(b.bg?40:0)+18;H+=h;return{b,l,h}});H+=40;
+  cv.width=W;cv.height=H;
+  const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#58c6ef');g.addColorStop(.25,'#fff6d8');g.addColorStop(1,'#ffe9ef');c.fillStyle=g;c.fillRect(0,0,W,H);
+  const [shi,logo]=await Promise.all([loadImg('shichan.png'),loadImg('logo.jpg')]);
+  if(logo){const lw=W-PAD*2-240,lh=lw*logo.height/logo.width;c.fillStyle='#3b3f47';c.fillRect(PAD-10,40-10,lw+20,lh+20);c.drawImage(logo,PAD,40,lw,lh)}
+  if(shi){const sh=250,sw=sh*shi.width/shi.height;c.drawImage(shi,W-PAD-sw,20,sw,sh)}
+  let y=HEAD;
+  for(const {b,l,h} of laid){c.font=`${b.bold?800:600} ${b.size}px ${FONT}`;c.textBaseline='top';
+    if(b.bg){c.fillStyle=b.bg;c.beginPath();c.roundRect?c.roundRect(PAD,y,W-PAD*2,h-18,20):c.rect(PAD,y,W-PAD*2,h-18);c.fill()}
+    c.fillStyle=b.color;l.forEach((ln,i)=>c.fillText(ln,PAD+(b.bg?20:0),y+(b.bg?20:0)+i*b.size*1.4));y+=h}
+  return cv;
+}
+$('shotBtn').onclick=async()=>{
+  openModal(`<p>${t('画像を作っています…','Making image…')}</p>`);
+  try{const cv=await makeShot();const url=cv.toDataURL('image/png');
+    openModal(`<p>${t('画像を長押しして「写真に保存」してね','Long-press the image to save it')}</p><img src="${url}" alt=""><div class="mbtns"><button class="btn red" id="shareBtn">${t('共有・保存','Share / Save')}</button><button class="btn gray" data-close>${t('閉じる','Close')}</button></div>`);
+    $('shareBtn').onclick=async()=>{try{const blob=await (await fetch(url)).blob();const file=new File([blob],`eto-navi-${S.year}.png`,{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]})}else{const a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove()}}catch(e){}};
+  }catch(e){openModal(`<p>${t('画像を作れませんでした','Could not make the image')}</p><div class="mbtns"><button class="btn gray" data-close>${t('閉じる','Close')}</button></div>`)}
+};
+
+/* ---------- privacy (first time only) ---------- */
+if(!S.seenPrivacy){$('privacy').classList.add('show')}
+$('privacy').addEventListener('click',()=>{$('privacy').classList.remove('show');S.seenPrivacy=true;save()});
+
+/* ---------- new product banner (receive only) ---------- */
+async function checkBanner(){
+  if(!navigator.onLine)return;
+  try{const ctl=new AbortController();setTimeout(()=>ctl.abort(),6000);
+    const r=await fetch(BANNER_URL+'?t='+Date.now(),{cache:'no-store',signal:ctl.signal});if(!r.ok)return;const d=await r.json();
+    const np=d&&(d.newProduct||d.new_product);if(!np||!np.text)return;
+    $('npText').textContent='✨ '+String(np.text).slice(0,80)+' ✨';$('np').classList.add('show');
+    $('np').onclick=()=>{if(np.image&&/^https:\/\//.test(np.image))openModal(`<img src="${esc(np.image)}" alt=""><p>${esc(np.text)}</p><div class="mbtns"><button class="btn gray" data-close>${t('閉じる','Close')}</button></div>`)};
+  }catch(e){}
+}
+
+/* ---------- start ---------- */
+renderYaku();addEventListener('resize',()=>renderYaku());
+renderAll(false);
+requestAnimationFrame(()=>{wheelTo(S.year,false);markWheel();speak(shiSay(info(S.year,S.sex)))});
+checkBanner();
+
+/* ---------- offline & auto update ---------- */
+if('serviceWorker' in navigator){
+  try{const had=!!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').then(reg=>{reg.update().catch(()=>{})}).catch(()=>{});
+    let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;save();location.reload()}});
+  }catch(e){}
+}
+}
+</script>
+</body>
+</html>
