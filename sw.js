@@ -1,5 +1,5 @@
-// しーちゃんの干支ナビ  service worker
-const VERSION = '1.0.0';
+// しーちゃんの八方塞がり  service worker
+const VERSION = '1.1.0';
 const CACHE = 'eto-navi-' + VERSION;
 const ASSETS = ['./', 'index.html', 'manifest.json', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'shichan.png', 'logo.jpg', 'homescreen.jpg'];
 

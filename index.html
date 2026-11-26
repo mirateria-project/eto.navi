@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>しーちゃんの干支ナビ</title>
+<title>しーちゃんの八方塞がり</title>
 <meta name="theme-color" content="#3247a4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="干支ナビ">
+<meta name="apple-mobile-web-app-title" content="八方塞がり">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
@@ -93,6 +93,12 @@ h1 small{display:block;font-size:14px;text-shadow:0 1px 0 var(--deep)}
 @keyframes pulse{50%{box-shadow:0 0 0 6px #e8344e44}}
 .bd.ok{background:#e3f7ea;color:#16683a;border:2px solid #36b56a}
 .bd.tsb{background:#fff1c7;color:#7a4b00;border:2px solid #f0a800}
+.bd.hp{background:#e0f2f1;color:#0b5d55;border:2px solid #1a9e8f}
+.bd.hp.main{background:#0f766e;color:#fff;border-color:#0f766e;animation:pulse2 1.4s ease-in-out infinite}
+@keyframes pulse2{50%{box-shadow:0 0 0 6px #0f766e44}}
+.happo .hbox{background:#e0f2f1;border-radius:14px;padding:12px;margin-top:8px;font-weight:700;line-height:1.7}
+.happo .now{font-size:20px;font-weight:900;color:#0b5d55}
+.happo .now.on{color:#fff;background:#0f766e;border-radius:14px;padding:10px 12px}
 .bd.fs{background:#e9e4ff;color:#3e2a9b;border:2px solid #7d68e8}
 .trait{margin-top:10px;font-size:15px;color:#4c5872}
 /* fortune */
@@ -157,7 +163,7 @@ input[type=text]:focus{outline:3px solid var(--sun);border-color:var(--sun)}
 <div class="wrap" id="app">
  <header>
   <img src="icon-192.png" alt="">
-  <h1><span data-en="ETO Navi">しーちゃんの干支ナビ</span><small data-en="Zodiac, ages &amp; life milestones">干支・年齢・厄年・体の節目</small></h1>
+  <h1><span data-en="Shi-chan's Happo-fusagari">しーちゃんの八方塞がり</span><small data-en="Happo-fusagari, zodiac, yakudoshi &amp; milestones">八方塞がり・干支・厄年・体の節目</small></h1>
  </header>
 
  <section class="hero">
@@ -189,6 +195,7 @@ input[type=text]:focus{outline:3px solid var(--sun);border-color:var(--sun)}
  </section>
 
  <section class="card" id="result"></section>
+ <section class="card happo" id="happo"></section>
  <section class="card fortune" id="fortune"></section>
  <section class="card" id="future"></section>
 
@@ -231,7 +238,7 @@ input[type=text]:focus{outline:3px solid var(--sun);border-color:var(--sun)}
 
 <script>
 {
-const VERSION='1.0.0';
+const VERSION='1.1.0';
 const BANNER_URL='https://mirateria-project.github.io/bana.kanri/banner.json';
 const JA=(navigator.language||'ja').toLowerCase().startsWith('ja');
 const t=(j,e)=>JA?j:e;
@@ -252,6 +259,9 @@ const TSB=[13,25,37,49,61,73,85,97];
 const CHOJU={61:['還暦','Kanreki'],70:['古希','Koki'],77:['喜寿','Kiju'],80:['傘寿','Sanju'],88:['米寿・トーカチ','Beiju / Tokachi'],90:['卒寿','Sotsuju'],97:['カジマヤー','Kajimaya'],99:['白寿','Hakuju']};
 const FORT=[['思いがけない良い知らせが届きそう','Unexpected good news may arrive'],['人との会話から運が開ける日','Luck opens through conversation'],['あせらずゆっくり進むと吉','Slow and steady brings luck'],['新しいことを始めるのにぴったり','A perfect day to start something new'],['身の回りを片付けると運気アップ','Tidying up boosts your luck'],['笑顔がいちばんのお守り','Your smile is your best charm'],['小さな親切が大きく返ってくる','Small kindness comes back big'],['気になっていたことを片付けるチャンス','A chance to finish what was on your mind'],['少し休むと良いアイデアが浮かぶ','A little rest brings a good idea'],['昔の友達とのご縁がつながりそう','An old friendship may reconnect'],['食事を楽しむと運がめぐる','Enjoying meals keeps luck flowing'],['直感を信じて大丈夫','Trust your instincts'],['人にまかせると上手くいく','Letting others help works well'],['外に出ると良いことがありそう','Going outside brings something good'],['ていねいな言葉が幸運を呼ぶ','Kind words invite good fortune'],['今日はのんびりが正解','Taking it easy is the right answer today']];
 const TIPS=[['コップ1杯の水をこまめに飲もう','Sip water often today'],['いつもより10分多く歩こう','Walk 10 minutes more than usual'],['血圧を測ってみよう','Try checking your blood pressure'],['塩分ひかえめを意識しよう','Go a little easier on salt'],['夜は早めに寝よう','Get to bed a bit earlier tonight'],['肩と首をゆっくり回そう','Slowly roll your shoulders and neck'],['野菜を1品ふやそう','Add one more vegetable dish'],['深呼吸を3回しよう','Take three deep breaths'],['歯みがきをていねいに','Brush your teeth extra carefully'],['健康診断の予定を確認しよう','Check when your next checkup is'],['たくさん笑おう。笑顔は元気のもと','Laugh a lot, it gives you energy'],['お酒はほどほどに','Keep drinks in moderation'],['日光を少し浴びよう','Get a little sunshine'],['ストレッチで体をのばそう','Stretch your body'],['よくかんでゆっくり食べよう','Chew well and eat slowly'],['家族や友達に「元気？」と連絡しよう','Message someone: "How are you?"']];
+const KYU=[['一白水星','1 White Water'],['二黒土星','2 Black Earth'],['三碧木星','3 Jade Wood'],['四緑木星','4 Green Wood'],['五黄土星','5 Yellow Earth'],['六白金星','6 White Metal'],['七赤金星','7 Red Metal'],['八白土星','8 White Earth'],['九紫火星','9 Purple Fire']];
+const kyuOf=y=>((11-(y%9))%9)||9;
+const isHappo=age=>age>=0&&age%9===0;
 const COLORS=[['赤','Red','#e53935'],['オレンジ','Orange','#fb8c00'],['黄色','Yellow','#fdd835'],['緑','Green','#43a047'],['水色','Sky blue','#4fc3f7'],['青','Blue','#1e5bd8'],['むらさき','Purple','#8e24aa'],['ピンク','Pink','#f06292'],['白','White','#ffffff'],['金色','Gold','#d4a017'],['茶色','Brown','#8d5524'],['黒','Black','#222222']];
 
 /* ---------- helpers ---------- */
@@ -295,7 +305,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 if(!JA){document.documentElement.lang='en';
   document.querySelectorAll('[data-en]').forEach(el=>{el.textContent=el.dataset.en});
   document.querySelectorAll('[data-en-ph]').forEach(el=>{el.placeholder=el.dataset.enPh});
-  document.title='ETO Navi';}
+  document.title="Shi-chan's Happo-fusagari";}
 $('ver').textContent=t('バージョン ','Version ')+VERSION;
 $('yY').textContent=JA?`${Y}年（${wareki(Y)}）`:String(Y);
 
@@ -324,8 +334,8 @@ $('sexM').onclick=()=>setSex('M');$('sexF').onclick=()=>setSex('F');
 /* ---------- person info ---------- */
 function info(year,sex){
   const age=Y-year,kazoe=age+1,k=etoIdx(year),yk=yakuOf(kazoe,sex);
-  const tsb=TSB.includes(kazoe), cj=CHOJU[kazoe], fs=isFS(age,sex);
-  return{year,sex,age,kazoe,k,yk,tsb,cj,fs};
+  const tsb=TSB.includes(kazoe), cj=CHOJU[kazoe], fs=isFS(age,sex), hp=isHappo(age), ks=kyuOf(year);
+  return{year,sex,age,kazoe,k,yk,tsb,cj,fs,hp,ks};
 }
 function events(p,limit){
   const out=[];
@@ -334,6 +344,7 @@ function events(p,limit){
     const yk=yakuOf(kz,p.sex);if(yk)list.push({c:'yaku',txt:yakuLabel(yk)});
     if(TSB.includes(kz))list.push({c:'tsb',txt:kz===97?t('トゥシビー（カジマヤー）','Tushibi (Kajimaya)'):t('トゥシビー（生年祝い）','Tushibi (birth-year celebration)')});
     else if(CHOJU[kz])list.push({c:'tsb',txt:t(CHOJU[kz][0],CHOJU[kz][1])});
+    if(isHappo(age))list.push({c:'hp',txt:t('八方塞がり','Happo-fusagari')});
     if(isFS(age,p.sex))list.push({c:'fs',txt:t('体の節目','Body milestone')});
     if(list.length)out.push({y,age,kz,list});
   }
@@ -346,6 +357,7 @@ function shiSay(p){
   const who=name?t(`${name}は`,`${name}: `):'';
   if(p.yk&&p.yk.type==='main')return t(`${who}今年は${yakuLabel(p.yk)}！ 神社でお祓いをして、健康診断も受けておくと安心だよ`,`${who}This is your ${yakuLabel(p.yk)} year! A shrine blessing and a health checkup will put your mind at ease.`);
   if(p.yk)return t(`${who}今年は${yakuLabel(p.yk)}だよ。むりをしないで、体の声を聞いてね`,`${who}This is your ${yakuLabel(p.yk)} year. Don't overdo it, listen to your body.`);
+  if(p.hp)return t(`${who}今年は八方塞がりの年。大きな決断はひかえて、体調管理と身の回りの整理で、次のチャンスに備えようね`,`${who}This is your Happo-fusagari year. Avoid big decisions; take care of your health and tidy up to get ready for the next good chance.`);
   if(p.fs)return t(`${who}今年は体の節目の年。血圧を測ったり、健康診断に行くきっかけにしてね`,`${who}This is a body milestone year. A good time to check blood pressure or get a checkup.`);
   if(p.tsb)return t(`${who}今年はトゥシビー！ 生まれ年のお祝いだよ。おめでとう🎉`,`${who}It's your Tushibi year, an Okinawan birth-year celebration! 🎉`);
   if(p.cj)return t(`${who}今年は${p.cj[0]}のお祝い！ おめでとう🎉`,`${who}Congratulations on your ${p.cj[1]}! 🎉`);
@@ -363,6 +375,7 @@ function renderResult(p){
   else b.push(`<span class="bd ok">✓ ${t('今年は厄年ではありません','Not a yakudoshi year')}</span>`);
   if(p.tsb)b.push(`<span class="bd tsb">🎉 ${p.kazoe===97?t('トゥシビー（カジマヤー）','Tushibi (Kajimaya)'):t('トゥシビー（生年祝い）','Tushibi year')}</span>`);
   else if(p.cj)b.push(`<span class="bd tsb">🎉 ${t(p.cj[0],p.cj[1])}</span>`);
+  if(p.hp)b.push(`<span class="bd hp main">🧭 ${t('今年は八方塞がり','Happo-fusagari this year')}</span>`);
   if(p.fs)b.push(`<span class="bd fs">💜 ${t('体の節目の年','Body milestone year')}</span>`);
   $('result').innerHTML=`<h2>${t('② あなたの結果','2. Your result')}<span class="tag">${p.sex==='M'?t('男性','Male'):t('女性','Female')}</span></h2>
   <div class="res-top"><div class="etoBig"><b>${ETO[p.k]}</b></div>
@@ -374,6 +387,17 @@ function renderResult(p){
   </div>
   <div class="badges">${b.join('')}</div>
   <div class="trait">${t('言い伝えの性格：','Folk trait: ')}<b>${t(TRAIT[p.k][0],TRAIT[p.k][1])}</b></div>`;
+}
+function renderHappo(p){
+  let nx=Y+((9-(p.age%9))%9);if(nx===Y&&!p.hp)nx+=9;const nxt=p.hp?Y+9:nx;
+  const now=p.hp?`<div class="now on">🧭 ${t('今年は八方塞がりの年です','This is your Happo-fusagari year')}</div>`
+    :`<div class="now">✓ ${t('今年は八方塞がりではありません','Not a Happo-fusagari year')}</div>`;
+  $('happo').innerHTML=`<h2>🧭 ${t('八方塞がり','Happo-fusagari')}<span class="tag">${t(KYU[p.ks-1][0],KYU[p.ks-1][1])}</span></h2>
+  ${now}
+  <div class="hbox">${t(`次の八方塞がり：<b>${nxt}年</b>（${nxt-p.year}歳）`,`Next: <b>${nxt}</b> (age ${nxt-p.year})`)}</div>
+  <div class="hbox">${t('日本の伝統的な考え方に基づいています。方位や運勢のバイオリズムにおいて、運気が下がる特定の時期を指す概念として、古くから意識されてきたものです。','Based on a traditional Japanese idea. It is a period when luck is said to dip in the cycle of directions and fortune, long kept in mind by many people.')}</div>
+  <div class="hbox">${t('大きな決断は避け、体調管理や身の回りの整理に集中して、次の好機に備える期間と捉えましょう。','Avoid big decisions. Focus on your health and tidying up, and get ready for the next good chance.')}</div>
+  <div class="note">${t('9年に1回めぐってきます。1月1日〜2月3日生まれの人は、前の年の生まれとして見てね。','Comes once every 9 years. If born Jan 1 – Feb 3, check the previous year.')}</div>`;
 }
 function renderFortune(p){
   const d=new Date(),ds=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
@@ -392,7 +416,7 @@ function renderFuture(p){
   <div class="note">${t(`体の節目は昔からの言い伝え（東洋医学の考え）で、女性は7の倍数、男性は8の倍数の歳に体が変わりやすいといわれます。`,`Body milestones come from old Eastern-medicine tradition: women at multiples of 7, men at multiples of 8.`)}</div>`;
 }
 function renderFam(){
-  const html=S.fam.map((f,i)=>{const p=info(f.year,f.sex);const tags=[p.yk?yakuLabel(p.yk):'',p.tsb?t('トゥシビー','Tushibi'):'',p.fs?t('節目','Milestone'):''].filter(Boolean).join('・');
+  const html=S.fam.map((f,i)=>{const p=info(f.year,f.sex);const tags=[p.yk?yakuLabel(p.yk):'',p.hp?t('八方塞がり','Happo'):'',p.tsb?t('トゥシビー','Tushibi'):'',p.fs?t('節目','Milestone'):''].filter(Boolean).join('・');
    return`<div class="fam ${S.cur===i?'cur':''}" data-i="${i}"><div class="k">${ETO[p.k]}</div><div class="n">${esc(f.name)}<small>${f.year}${t('年生','')}・${p.age}${t('歳','')}・${f.sex==='M'?t('男','M'):t('女','F')}${tags?` ・ <b style="color:#c2142f">${tags}</b>`:''}</small></div><button class="btn gray del" data-del="${i}" aria-label="${t('削除','Delete')}">✕</button></div>`}).join('');
   $('famList').innerHTML=html||`<div class="note">${t('まだ登録がありません','No one yet')}</div>`;
 }
@@ -419,7 +443,7 @@ $('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!
 function renderAll(talk){
   const p=info(S.year,S.sex);
   $('sexM').classList.toggle('sel',S.sex==='M');$('sexF').classList.toggle('sel',S.sex==='F');
-  renderResult(p);renderFortune(p);renderFuture(p);renderFam();renderTabs();markWheel();
+  renderResult(p);renderHappo(p);renderFortune(p);renderFuture(p);renderFam();renderTabs();markWheel();
   if(talk)speak(shiSay(p));
 }
 
@@ -437,19 +461,21 @@ async function makeShot(){
   const p=info(S.year,S.sex),W=1080,PAD=50,FONT='"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif';
   const cv=document.createElement('canvas'),c=cv.getContext('2d');
   const blocks=[];const add=(txt,size,color,bold,bg)=>blocks.push({txt,size,color:color||'#1d2433',bold,bg});
-  add(t('しーちゃんの干支ナビ','ETO Navi'),56,'#1b3a8f',1);
+  add(t('しーちゃんの八方塞がり',"Shi-chan's Happo-fusagari"),56,'#1b3a8f',1);
   add(`${ETO[p.k]}  ${JA?etoJ(p.k):`Year of the ${ANI_E[p.k]}`}`,64,'#7a1d00',1);
   add(`${p.year}${t('年生まれ','')}  ${wareki(p.year)}  ${p.sex==='M'?t('男性','Male'):t('女性','Female')}`,34,'#3c4660');
   add(t(`今年なる年齢 ${p.age}歳 ／ 数え年 ${p.kazoe}歳`,`Age ${p.age} / Kazoe ${p.kazoe}`),40,'#1b3a8f',1);
   add(p.yk?t(`⚠ 今年は${yakuLabel(p.yk)}`,`⚠ ${yakuLabel(p.yk)} this year`):t('✓ 今年は厄年ではありません','✓ Not a yakudoshi year'),36,p.yk?'#c2142f':'#16683a',1);
   if(p.tsb)add(t('🎉 今年はトゥシビー（生年祝い）','🎉 Tushibi year'),34,'#7a4b00',1);
   if(p.cj)add(`🎉 ${t(p.cj[0],p.cj[1])}`,34,'#7a4b00',1);
+  add(p.hp?t('🧭 今年は八方塞がりの年','🧭 Happo-fusagari year'):t(`🧭 次の八方塞がり ${Y+((9-(p.age%9))%9)}年`,`🧭 Next Happo-fusagari: ${Y+((9-(p.age%9))%9)}`),34,'#0b5d55',1);
+  if(p.hp)add(t('大きな決断は避け、体調管理や身の回りの整理に集中して、次の好機に備える期間と捉えましょう。','Avoid big decisions; focus on health and tidying up.'),28,'#0b5d55');
   if(p.fs)add(t('💜 今年は体の節目の年','💜 Body milestone year'),34,'#3e2a9b',1);
   add(t('しーちゃん：','Shi-chan: ')+shiSay(p),32,'#1d2433',0,'#fff3c4');
   add(t('■ これからの節目','■ Coming milestones'),38,'#1b3a8f',1);
   events(p,6).forEach(e=>add(`${e.y}${t('年','')}（${t(`${e.age}歳・数え${e.kz}`,`age ${e.age}, kazoe ${e.kz}`)}）  ${e.list.map(x=>x.txt).join('・')}`,30));
   if(S.fam.length){add(t('■ 家族・友だち','■ Family'),38,'#1b3a8f',1);
-    S.fam.forEach(f=>{const q=info(f.year,f.sex);add(`${f.name}  ${ETO[q.k]}  ${f.year}${t('年生','')}  ${q.age}${t('歳','')}  ${q.yk?yakuLabel(q.yk):''} ${q.tsb?t('トゥシビー','Tushibi'):''} ${q.fs?t('節目','Milestone'):''}`,30)})}
+    S.fam.forEach(f=>{const q=info(f.year,f.sex);add(`${f.name}  ${ETO[q.k]}  ${f.year}${t('年生','')}  ${q.age}${t('歳','')}  ${q.yk?yakuLabel(q.yk):''} ${q.hp?t('八方塞がり','Happo'):''} ${q.tsb?t('トゥシビー','Tushibi'):''} ${q.fs?t('節目','Milestone'):''}`,30)})}
   add(t(`■ ${Y}年の厄年`,`■ Yakudoshi in ${Y}`),38,'#1b3a8f',1);
   for(const sex of ['M','F']){const tb=YAKU[sex];const parts=[];for(const k in tb){const b=+k;for(const [kz,ty] of [[b-1,'pre'],[b,'main'],[b+1,'post']])parts.push(`${Y-kz+1}${t('年生','')} ${yakuLabel({type:ty,big:tb[k]})}`)}add(`${sex==='M'?t('男性','Men'):t('女性','Women')}： ${parts.join(' ／ ')}`,28)}
   add(t('厄年・体の節目は昔からの言い伝えです。病気を当てるものではありません。','Yakudoshi and milestones are traditions, not predictions of illness.'),26,'#55607a');
@@ -471,7 +497,7 @@ $('shotBtn').onclick=async()=>{
   openModal(`<p>${t('画像を作っています…','Making image…')}</p>`);
   try{const cv=await makeShot();const url=cv.toDataURL('image/png');
     openModal(`<p>${t('画像を長押しして「写真に保存」してね','Long-press the image to save it')}</p><img src="${url}" alt=""><div class="mbtns"><button class="btn red" id="shareBtn">${t('共有・保存','Share / Save')}</button><button class="btn gray" data-close>${t('閉じる','Close')}</button></div>`);
-    $('shareBtn').onclick=async()=>{try{const blob=await (await fetch(url)).blob();const file=new File([blob],`eto-navi-${S.year}.png`,{type:'image/png'});
+    $('shareBtn').onclick=async()=>{try{const blob=await (await fetch(url)).blob();const file=new File([blob],`happo-${S.year}.png`,{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]})}else{const a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove()}}catch(e){}};
   }catch(e){openModal(`<p>${t('画像を作れませんでした','Could not make the image')}</p><div class="mbtns"><button class="btn gray" data-close>${t('閉じる','Close')}</button></div>`)}
 };

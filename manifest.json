@@ -1,7 +1,7 @@
 {
-  "name": "しーちゃんの干支ナビ",
-  "short_name": "干支ナビ",
-  "description": "干支・年齢・厄年・トゥシビー・体の節目がすぐ分かる",
+  "name": "しーちゃんの八方塞がり",
+  "short_name": "八方塞がり",
+  "description": "八方塞がり・干支・年齢・厄年・トゥシビー・体の節目がすぐ分かる",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
